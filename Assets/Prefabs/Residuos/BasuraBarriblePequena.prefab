@@ -1,0 +1,132 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1144247992654974223
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5317349469313073705}
+  - component: {fileID: 9158308137324559715}
+  - component: {fileID: 8448487421107494856}
+  m_Layer: 0
+  m_Name: BasuraBarriblePequena
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5317349469313073705
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144247992654974223}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -329.0728, y: 70, z: 12}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5353651165300761911}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &9158308137324559715
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144247992654974223}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.29953, y: 0.76013947, z: 1.1988821}
+  m_Center: {x: -0.07371521, y: -0.11993027, z: -0.018176556}
+--- !u!114 &8448487421107494856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144247992654974223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6591eb69a616b4fb20aa6c30e54bdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BasuraBarrible
+  barridosNecesarios: 2
+--- !u!1001 &1142917048416101856
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5317349469313073705}
+    m_Modifications:
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.5760193
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.09777832
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.18556023
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5398278196126211313, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+      propertyPath: m_Name
+      value: Prefab_Pile1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+--- !u!4 &5353651165300761911 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5014626650387628247, guid: 061212a3f10dff94aa04101489475a9d, type: 3}
+  m_PrefabInstance: {fileID: 1142917048416101856}
+  m_PrefabAsset: {fileID: 0}
