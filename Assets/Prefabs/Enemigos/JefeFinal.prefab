@@ -131,7 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14d6f59015d55b64ab8648b8b9c52639, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
-  vidaMaxima: 450
+  vidaMaxima: 650
   animadorEnemigo: {fileID: 6863556025233601356}
   tiempoReaccion: 0.9
   tiempoDesaparicion: 3
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AtaqueEnemigo
   jugador: {fileID: 0}
   animadorEnemigo: {fileID: 6863556025233601356}
-  danioAtaque: 25
+  danioAtaque: 49
   distanciaAtaque: 3.5
   tiempoEntreAtaques: 3
   duracionCombo: 2.7

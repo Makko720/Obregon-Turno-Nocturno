@@ -12,6 +12,11 @@ public class SistemaDiaNoche : MonoBehaviour
     [SerializeField] private RegeneradorBasura regeneradorBasura;
     [SerializeField] private JugadorFPS jugadorFPS;
 
+    [Header("Audio Ambiente")]
+    [SerializeField] private AudioSource audioDia;
+    [SerializeField] private AudioSource audioNoche;
+    [SerializeField, Range(0f, 1f)] private float volumenMaximoAudio = 0.5f;
+
     [Header("Transicion")]
     [SerializeField] private float duracionTransicion = 4f;
 
@@ -54,6 +59,24 @@ public class SistemaDiaNoche : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (audioDia != null)
+        {
+            audioDia.loop = true;
+            audioDia.volume = volumenMaximoAudio;
+            if (!audioDia.isPlaying)
+                audioDia.Play();
+        }
+
+        if (audioNoche != null)
+        {
+            audioNoche.loop = true;
+            audioNoche.volume = 0f;
+            audioNoche.Stop();
+        }
+    }
+
     public void IniciarNoche()
     {
         if (EsDeNoche || transicionEnCurso)
@@ -84,6 +107,13 @@ public class SistemaDiaNoche : MonoBehaviour
         if (jugadorFPS != null)
             jugadorFPS.enabled = false;
 
+        if (audioNoche != null && !audioNoche.isPlaying)
+        {
+            audioNoche.volume = 0f;
+            audioNoche.Play();
+        }
+
+        float volumenInicialDia = audioDia != null ? audioDia.volume : 0f;
         float intensidadInicial = luzSol.intensity;
         Color ambienteInicial = RenderSettings.ambientLight;
 
@@ -119,8 +149,23 @@ public class SistemaDiaNoche : MonoBehaviour
                 progreso
             );
 
+            if (audioDia != null)
+                audioDia.volume = Mathf.Lerp(volumenInicialDia, 0f, progreso);
+
+            if (audioNoche != null)
+                audioNoche.volume = Mathf.Lerp(0f, volumenMaximoAudio, progreso);
+
             yield return null;
         }
+
+        if (audioDia != null)
+        {
+            audioDia.volume = 0f;
+            audioDia.Stop();
+        }
+
+        if (audioNoche != null)
+            audioNoche.volume = volumenMaximoAudio;
 
         EsDeNoche = true;
         transicionEnCurso = false;
@@ -167,6 +212,13 @@ public class SistemaDiaNoche : MonoBehaviour
     {
         transicionEnCurso = true;
 
+        if (audioDia != null && !audioDia.isPlaying)
+        {
+            audioDia.volume = 0f;
+            audioDia.Play();
+        }
+
+        float volumenInicialNoche = audioNoche != null ? audioNoche.volume : 0f;
         float intensidadInicial = luzSol.intensity;
         Color ambienteInicial = RenderSettings.ambientLight;
         Color cieloInicial = camaraJugador.backgroundColor;
@@ -198,8 +250,23 @@ public class SistemaDiaNoche : MonoBehaviour
                 progreso
             );
 
+            if (audioNoche != null)
+                audioNoche.volume = Mathf.Lerp(volumenInicialNoche, 0f, progreso);
+
+            if (audioDia != null)
+                audioDia.volume = Mathf.Lerp(0f, volumenMaximoAudio, progreso);
+
             yield return null;
         }
+
+        if (audioNoche != null)
+        {
+            audioNoche.volume = 0f;
+            audioNoche.Stop();
+        }
+
+        if (audioDia != null)
+            audioDia.volume = volumenMaximoAudio;
 
         luzSol.intensity = intensidadSolDia;
         RenderSettings.ambientLight = ambienteDia;

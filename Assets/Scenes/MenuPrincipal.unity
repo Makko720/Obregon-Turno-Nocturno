@@ -328,10 +328,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: cae7295b536b1df42910464e6aa065ef, type: 3}
-    m_FontSize: 24
+    m_FontSize: 40
     m_FontStyle: 1
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 4
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
@@ -946,7 +946,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.14509805, g: 0.20784314, b: 0.25490198, a: 1}
+    m_NormalColor: {r: 0.14509805, g: 0.20784314, b: 0.25490198, a: 0}
     m_HighlightedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
     m_PressedColor: {r: 0.44313726, g: 0.6039216, b: 0.27058825, a: 1}
     m_SelectedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
@@ -1593,7 +1593,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.14509805, g: 0.20784314, b: 0.25490198, a: 1}
+    m_NormalColor: {r: 0.14509805, g: 0.20784314, b: 0.25490198, a: 0}
     m_HighlightedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
     m_PressedColor: {r: 0.44313726, g: 0.6039216, b: 0.27058825, a: 1}
     m_SelectedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
@@ -2480,7 +2480,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.14509805, g: 0.20784314, b: 0.25490198, a: 1}
+    m_NormalColor: {r: 0, g: 0, b: 0, a: 0}
     m_HighlightedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
     m_PressedColor: {r: 0.44313726, g: 0.6039216, b: 0.27058825, a: 1}
     m_SelectedColor: {r: 0.2509804, g: 0.35686275, b: 0.29803923, a: 1}
@@ -2999,10 +2999,10 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: cae7295b536b1df42910464e6aa065ef, type: 3}
-    m_FontSize: 24
+    m_FontSize: 40
     m_FontStyle: 1
     m_BestFit: 0
-    m_MinSize: 10
+    m_MinSize: 4
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
@@ -3416,7 +3416,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: cae7295b536b1df42910464e6aa065ef, type: 3}
-    m_FontSize: 24
+    m_FontSize: 40
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 2

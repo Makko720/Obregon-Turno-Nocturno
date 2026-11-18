@@ -10,6 +10,7 @@ public class SistemaMejoras : MonoBehaviour
         public Button botonMejorar;
         public Text textoPrecio;
         public Text textoBoton;
+        public Text textoNivel;
         public Image[] segmentosProgreso;
     }
 
@@ -18,6 +19,7 @@ public class SistemaMejoras : MonoBehaviour
     [SerializeField] private InventarioJugador inventarioJugador;
     [SerializeField] private JugadorFPS jugadorFPS;
     [SerializeField] private VidaJugador vidaJugador;
+    [SerializeField] private SistemaDiaNoche sistemaDiaNoche;
 
     [Header("1. Mochila reforzada (3 niveles: 5 -> 8 -> 11 -> 15)")]
     [SerializeField] private TarjetaMejoraUI uiMochila;
@@ -48,6 +50,7 @@ public class SistemaMejoras : MonoBehaviour
     [SerializeField] private Color colorSegmentoInactivo = new Color32(45, 62, 71, 255);
 
     private int ultimoDineroRevisado = -1;
+    private int ultimoDiaRevisado = -1;
 
     private void Awake()
     {
@@ -74,17 +77,26 @@ public class SistemaMejoras : MonoBehaviour
         if (sistemaDinero == null)
             return;
 
-        if (ultimoDineroRevisado != sistemaDinero.DineroActual)
+        int diaActual = sistemaDiaNoche != null ? sistemaDiaNoche.DiaActual : 1;
+
+        if (ultimoDineroRevisado != sistemaDinero.DineroActual || ultimoDiaRevisado != diaActual)
         {
             ultimoDineroRevisado = sistemaDinero.DineroActual;
+            ultimoDiaRevisado = diaActual;
             ActualizarTodaLaInterfaz();
         }
+    }
+
+    private bool EstaBloqueadoPorDia1(int nivelActual)
+    {
+        return sistemaDiaNoche != null && sistemaDiaNoche.DiaActual == 1 && nivelActual >= 1;
     }
 
     public void ComprarMejoraMochila()
     {
         int nivelMaximo = preciosMochila.Length;
-        if (nivelMochila >= nivelMaximo || sistemaDinero == null || inventarioJugador == null)
+        if (nivelMochila >= nivelMaximo || EstaBloqueadoPorDia1(nivelMochila) ||
+            sistemaDinero == null || inventarioJugador == null)
             return;
 
         int costo = preciosMochila[nivelMochila];
@@ -99,7 +111,8 @@ public class SistemaMejoras : MonoBehaviour
     public void ComprarMejoraTenis()
     {
         int nivelMaximo = preciosTenis.Length;
-        if (nivelTenis >= nivelMaximo || sistemaDinero == null || jugadorFPS == null)
+        if (nivelTenis >= nivelMaximo || EstaBloqueadoPorDia1(nivelTenis) ||
+            sistemaDinero == null || jugadorFPS == null)
             return;
 
         int costo = preciosTenis[nivelTenis];
@@ -114,7 +127,8 @@ public class SistemaMejoras : MonoBehaviour
     public void ComprarMejoraBrazalete()
     {
         int nivelMaximo = preciosBrazalete.Length;
-        if (nivelBrazalete >= nivelMaximo || sistemaDinero == null || vidaJugador == null)
+        if (nivelBrazalete >= nivelMaximo || EstaBloqueadoPorDia1(nivelBrazalete) ||
+            sistemaDinero == null || vidaJugador == null)
             return;
 
         int costo = preciosBrazalete[nivelBrazalete];
@@ -129,7 +143,8 @@ public class SistemaMejoras : MonoBehaviour
     public void ComprarMejoraCollar()
     {
         int nivelMaximo = preciosCollar.Length;
-        if (nivelCollar >= nivelMaximo || sistemaDinero == null || jugadorFPS == null)
+        if (nivelCollar >= nivelMaximo || EstaBloqueadoPorDia1(nivelCollar) ||
+            sistemaDinero == null || jugadorFPS == null)
             return;
 
         int costo = preciosCollar[nivelCollar];
@@ -156,24 +171,38 @@ public class SistemaMejoras : MonoBehaviour
 
         int nivelMaximo = precios.Length;
         bool estaAlMaximo = nivelActual >= nivelMaximo;
+        bool bloqueadoDia1 = !estaAlMaximo && EstaBloqueadoPorDia1(nivelActual);
         int costoSiguiente = estaAlMaximo ? 0 : precios[nivelActual];
         bool tieneDinero = sistemaDinero != null && sistemaDinero.DineroActual >= costoSiguiente;
 
+        if (tarjeta.textoNivel != null)
+        {
+            tarjeta.textoNivel.text = nivelActual + "/" + nivelMaximo;
+        }
+
         if (tarjeta.textoPrecio != null)
         {
-            tarjeta.textoPrecio.text = estaAlMaximo
-                ? "NIVEL MÁXIMO"
-                : "PRECIO: $" + costoSiguiente;
+            if (estaAlMaximo)
+                tarjeta.textoPrecio.text = "NIVEL MÁXIMO";
+            else if (bloqueadoDia1)
+                tarjeta.textoPrecio.text = "DISP. EN DÍA 2";
+            else
+                tarjeta.textoPrecio.text = "PRECIO: $" + costoSiguiente;
         }
 
         if (tarjeta.textoBoton != null)
         {
-            tarjeta.textoBoton.text = estaAlMaximo ? "MÁXIMO" : "MEJORAR";
+            if (estaAlMaximo)
+                tarjeta.textoBoton.text = "MÁXIMO";
+            else if (bloqueadoDia1)
+                tarjeta.textoBoton.text = "DÍA 2";
+            else
+                tarjeta.textoBoton.text = "MEJORAR";
         }
 
         if (tarjeta.botonMejorar != null)
         {
-            tarjeta.botonMejorar.interactable = !estaAlMaximo && tieneDinero;
+            tarjeta.botonMejorar.interactable = !estaAlMaximo && !bloqueadoDia1 && tieneDinero;
         }
 
         if (tarjeta.segmentosProgreso != null)
