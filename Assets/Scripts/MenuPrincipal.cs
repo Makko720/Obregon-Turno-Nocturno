@@ -93,8 +93,8 @@ public class MenuPrincipal : MonoBehaviour
     
     public void IniciarPartida()
     {
-        Debug.Log("Iniciando Obregón: Turno Nocturno...");
-        SceneManager.LoadScene("SectorInicialCiudad");
+        Debug.Log("Iniciando: Turno Nocturno...");
+        SceneManager.LoadScene("Principal");
     }
 
     public void SalirJuego()
