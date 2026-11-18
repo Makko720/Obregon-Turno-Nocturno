@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -11,6 +10,8 @@ public class SistemaDiaNoche : MonoBehaviour
     [SerializeField] private GeneradorEnemigosNocturnos generadorEnemigos;
     [SerializeField] private SistemaMisiones sistemaMisiones;
     [SerializeField] private RegeneradorBasura regeneradorBasura;
+    [SerializeField] private JugadorFPS jugadorFPS;
+
     [Header("Transicion")]
     [SerializeField] private float duracionTransicion = 4f;
 
@@ -90,6 +91,10 @@ public class SistemaDiaNoche : MonoBehaviour
     {
         transicionEnCurso = true;
 
+        // Bloquear movimiento e interacciones mientras oscurece
+        if (jugadorFPS != null)
+            jugadorFPS.enabled = false;
+
         float intensidadInicial = luzSol.intensity;
         Color ambienteInicial = RenderSettings.ambientLight;
 
@@ -130,6 +135,10 @@ public class SistemaDiaNoche : MonoBehaviour
 
         EsDeNoche = true;
         transicionEnCurso = false;
+
+        // Devolver el control al jugador al terminar la transicion
+        if (jugadorFPS != null)
+            jugadorFPS.enabled = true;
 
         Debug.Log("Ha comenzado la Noche " + DiaActual);
 

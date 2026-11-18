@@ -28,19 +28,19 @@ public class SistemaMejoras : MonoBehaviour
     [Header("2. Tenis de corredor (2 niveles: 1.0x -> 1.1x -> 1.2x)")]
     [SerializeField] private TarjetaMejoraUI uiTenis;
     [SerializeField] private int[] preciosTenis = { 100, 220 };
-    private readonly float[] multiplicadoresVelocidad = { 1f, 1.10f, 1.20f };
+    private readonly float[] multiplicadoresVelocidad = { 1f, 1.30f, 1.60f };
     private int nivelTenis = 0;
 
     [Header("3. Brazalete de vitalidad (5 niveles: 100 -> 175 HP)")]
     [SerializeField] private TarjetaMejoraUI uiBrazalete;
     [SerializeField] private int[] preciosBrazalete = { 75, 140, 220, 320, 450 };
-    private readonly int[] vidasMaximas = { 100, 115, 130, 145, 160, 175 };
+    private readonly int[] vidasMaximas = { 100, 125, 150, 175, 200, 225 };
     private int nivelBrazalete = 0;
 
     [Header("4. Collar de estamina (3 niveles: 100 -> 160)")]
     [SerializeField] private TarjetaMejoraUI uiCollar;
     [SerializeField] private int[] preciosCollar = { 90, 180, 300 };
-    private readonly float[] estaminasMaximas = { 100f, 120f, 140f, 160f };
+    private readonly float[] estaminasMaximas = { 100f, 135f, 170f, 205f };
     private int nivelCollar = 0;
 
     [Header("Colores de segmentos")]
