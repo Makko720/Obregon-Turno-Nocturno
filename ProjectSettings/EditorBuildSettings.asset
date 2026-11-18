@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/MenuPrincipal.unity
     guid: 94ca44c8ae5cd0d4499bdd5dc96eaeec
   - enabled: 1
-    path: Assets/Scenes/SectorInicialCiudad.unity
+    path: Assets/Scenes/Principal.unity
     guid: d1357890661faf5448943617b5bdfb71
   - enabled: 0
     path: Assets/Scenes/SectorInicial.unity

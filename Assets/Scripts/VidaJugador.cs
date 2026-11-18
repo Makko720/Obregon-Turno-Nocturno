@@ -53,6 +53,16 @@ public class VidaJugador : MonoBehaviour
         );
     }
 
+    public void EstablecerVidaMaxima(int nuevaVidaMaxima, bool aumentarVidaActual = true)
+    {
+        int incremento = nuevaVidaMaxima - vidaMaxima;
+        vidaMaxima = Mathf.Max(1, nuevaVidaMaxima);
+        if (aumentarVidaActual && incremento > 0 && !EstaDerrotado)
+        {
+            VidaActual = Mathf.Min(VidaActual + incremento, vidaMaxima);
+        }
+    }
+
     [ContextMenu("Prueba - Recibir 20 de daño")]
     private void ProbarDanio()
     {

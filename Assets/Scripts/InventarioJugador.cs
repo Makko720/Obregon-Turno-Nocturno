@@ -84,6 +84,12 @@ public class InventarioJugador : MonoBehaviour
         return true;
     }
 
+    public void EstablecerCapacidadMaxima(int nuevaCapacidad)
+    {
+        capacidadMaxima = Mathf.Max(EspaciosOcupados, nuevaCapacidad);
+        InventarioActualizado?.Invoke();
+    }
+    
     [ContextMenu("Prueba - Agregar botella")]
     private void ProbarInventario()
     {
