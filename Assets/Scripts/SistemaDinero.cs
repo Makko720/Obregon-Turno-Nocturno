@@ -68,6 +68,6 @@ public class SistemaDinero : MonoBehaviour
     [ContextMenu("Prueba - Ganar 1000 pesos")]
     private void ProbarDinero()
     {
-        GanarDinero(100);
+        GanarDinero(1000);
     }
 }

@@ -41,8 +41,6 @@ public class SistemaDiaNoche : MonoBehaviour
 
     private void Awake()
     {
-        // Guardar la iluminacion original para restaurarla
-        // correctamente cuando vuelva a amanecer.
         if (luzSol != null)
             intensidadSolDia = luzSol.intensity;
 
@@ -61,9 +59,7 @@ public class SistemaDiaNoche : MonoBehaviour
         if (EsDeNoche || transicionEnCurso)
             return;
 
-        // Por ahora implementamos unicamente la primera noche.
-        // La segunda se desbloqueara con la mision de la pala.
-        if (DiaActual != 1)
+        if (DiaActual != 1 && DiaActual != 2)
         {
             Debug.Log(
                 "La siguiente noche aun no esta desbloqueada."
@@ -80,7 +76,6 @@ public class SistemaDiaNoche : MonoBehaviour
             return;
         }
 
-        // No oscurecer la ciudad si faltan puntos de aparicion.
         if (!generadorEnemigos.ConfiguracionValida())
             return;
 
@@ -91,7 +86,6 @@ public class SistemaDiaNoche : MonoBehaviour
     {
         transicionEnCurso = true;
 
-        // Bloquear movimiento e interacciones mientras oscurece
         if (jugadorFPS != null)
             jugadorFPS.enabled = false;
 
@@ -136,26 +130,32 @@ public class SistemaDiaNoche : MonoBehaviour
         EsDeNoche = true;
         transicionEnCurso = false;
 
-        // Devolver el control al jugador al terminar la transicion
         if (jugadorFPS != null)
             jugadorFPS.enabled = true;
 
         Debug.Log("Ha comenzado la Noche " + DiaActual);
 
-        // Generar los enemigos cuando ya oscurecio.
-        generadorEnemigos.GenerarOleada();
+        generadorEnemigos.GenerarOleada(DiaActual);
     }
 
-    public void ActualizarProgresoOleada(int restantes, int total)
+    public void ActualizarProgresoOleada(
+        int restantes,
+        int total,
+        int oleadaActual = 1,
+        int totalOleadas = 1
+    )
     {
-        if (!EsDeNoche || DiaActual != 1)
+        if (!EsDeNoche)
             return;
 
         if (sistemaMisiones != null)
         {
             sistemaMisiones.ActualizarProgresoOleada(
+                DiaActual,
                 restantes,
-                total
+                total,
+                oleadaActual,
+                totalOleadas
             );
         }
     }
@@ -206,7 +206,6 @@ public class SistemaDiaNoche : MonoBehaviour
             yield return null;
         }
 
-        // Restaurar la configuracion original del dia.
         luzSol.intensity = intensidadSolDia;
         RenderSettings.ambientLight = ambienteDia;
         RenderSettings.ambientMode = modoAmbienteDia;
@@ -218,7 +217,6 @@ public class SistemaDiaNoche : MonoBehaviour
         DiaActual++;
         transicionEnCurso = false;
 
-        // Restaurar los residuos al comenzar un nuevo dia.
         if (regeneradorBasura != null)
         {
             regeneradorBasura.RegenerarBasura();

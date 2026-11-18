@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +13,10 @@ public enum EtapaMision
     ComprarPalaDia2,
     PalaCompradaDia2,
     RepararBachesDia2,
-    BachesDia2Completados
+    BachesDia2Completados,
+    EliminarOrcosNoche2,
+    SegundaNocheCompletada,
+    Dia3Iniciado
 }
 
 public class SistemaMisiones : MonoBehaviour
@@ -35,6 +37,8 @@ public class SistemaMisiones : MonoBehaviour
 
     private int enemigosTotalesNoche;
     private int enemigosDerrotadosNoche;
+    private int oleadaActualNoche = 1;
+    private int totalOleadasNoche = 1;
 
     private void OnEnable()
     {
@@ -55,11 +59,8 @@ public class SistemaMisiones : MonoBehaviour
         if (inventario == null)
             return 0;
 
-        return inventario.ObtenerCantidad(
-            TipoObjetoInventario.Botella
-        ) + inventario.ObtenerCantidad(
-            TipoObjetoInventario.Lata
-        );
+        return inventario.ObtenerCantidad(TipoObjetoInventario.Botella) +
+               inventario.ObtenerCantidad(TipoObjetoInventario.Lata);
     }
 
     public void FinalizarPrimerDialogo()
@@ -100,49 +101,89 @@ public class SistemaMisiones : MonoBehaviour
         ActualizarHUD();
     }
 
-    // NUEVO: actualizar la mision durante la primera noche.
     public void ActualizarProgresoOleada(
+        int diaNoche,
         int enemigosRestantes,
-        int totalEnemigos
+        int totalEnemigos,
+        int oleadaActual,
+        int totalOleadas
     )
     {
-        if (EtapaActual != EtapaMision.TutorialCompletado &&
-            EtapaActual != EtapaMision.EliminarOrcosNoche1 &&
-            EtapaActual != EtapaMision.PrimeraNocheCompletada)
-        {
-            return;
-        }
-
         enemigosTotalesNoche = Mathf.Max(0, totalEnemigos);
-
         enemigosDerrotadosNoche = Mathf.Clamp(
             enemigosTotalesNoche - enemigosRestantes,
             0,
             enemigosTotalesNoche
         );
+        oleadaActualNoche = Mathf.Max(1, oleadaActual);
+        totalOleadasNoche = Mathf.Max(1, totalOleadas);
 
-        if (enemigosTotalesNoche > 0 &&
-            enemigosRestantes <= 0)
+        bool oleadaLimpia = enemigosTotalesNoche > 0 && enemigosRestantes <= 0;
+        bool todasOleadasLimpias = oleadaLimpia && oleadaActualNoche >= totalOleadasNoche;
+
+        if (diaNoche == 1)
         {
-            EtapaActual = EtapaMision.PrimeraNocheCompletada;
+            if (EtapaActual != EtapaMision.TutorialCompletado &&
+                EtapaActual != EtapaMision.EliminarOrcosNoche1 &&
+                EtapaActual != EtapaMision.PrimeraNocheCompletada)
+                return;
+
+            EtapaActual = todasOleadasLimpias
+                ? EtapaMision.PrimeraNocheCompletada
+                : EtapaMision.EliminarOrcosNoche1;
         }
-        else
+        else if (diaNoche == 2)
         {
-            EtapaActual = EtapaMision.EliminarOrcosNoche1;
+            if (EtapaActual != EtapaMision.BachesDia2Completados &&
+                EtapaActual != EtapaMision.EliminarOrcosNoche2 &&
+                EtapaActual != EtapaMision.SegundaNocheCompletada)
+                return;
+
+            EtapaActual = todasOleadasLimpias
+                ? EtapaMision.SegundaNocheCompletada
+                : EtapaMision.EliminarOrcosNoche2;
         }
 
         ActualizarHUD();
     }
 
-    // NUEVO: pasar al objetivo del Dia 2.
     public void RegistrarAmanecer(int nuevoDia)
     {
-        if (nuevoDia == 2 &&
-            EtapaActual == EtapaMision.PrimeraNocheCompletada)
+        if (nuevoDia == 2 && EtapaActual == EtapaMision.PrimeraNocheCompletada)
         {
             EtapaActual = EtapaMision.ComprarPalaDia2;
             ActualizarHUD();
         }
+        else if (nuevoDia == 3 && EtapaActual == EtapaMision.SegundaNocheCompletada)
+        {
+            EtapaActual = EtapaMision.Dia3Iniciado;
+            ActualizarHUD();
+        }
+    }
+
+    public void RegistrarCompraPala()
+    {
+        if (EtapaActual != EtapaMision.ComprarPalaDia2)
+            return;
+
+        bachesReparados = 0;
+        EtapaActual = EtapaMision.RepararBachesDia2;
+        ActualizarHUD();
+    }
+
+    public void RegistrarBacheReparado()
+    {
+        if (EtapaActual != EtapaMision.RepararBachesDia2)
+            return;
+
+        bachesReparados = Mathf.Min(bachesReparados + 1, bachesNecesarios);
+
+        if (bachesReparados >= bachesNecesarios)
+        {
+            EtapaActual = EtapaMision.BachesDia2Completados;
+        }
+
+        ActualizarHUD();
     }
 
     private void ActualizarHUD()
@@ -153,8 +194,7 @@ public class SistemaMisiones : MonoBehaviour
         switch (EtapaActual)
         {
             case EtapaMision.HablarComerciante:
-                textoMision.text =
-                    "Habla con el comerciante de la gasolinera.";
+                textoMision.text = "Habla con el comerciante de la gasolinera.";
                 break;
 
             case EtapaMision.RecolectarResiduos:
@@ -165,87 +205,55 @@ public class SistemaMisiones : MonoBehaviour
                 break;
 
             case EtapaMision.VolverComerciante:
-                textoMision.text =
-                    "Vuelve con el comerciante de la gasolinera.";
+                textoMision.text = "Vuelve con el comerciante de la gasolinera.";
                 break;
 
             case EtapaMision.ComprarEscoba:
-                textoMision.text =
-                    "Reúne dinero y compra una escoba al comerciante.";
+                textoMision.text = "Reúne dinero y compra una escoba al comerciante.";
                 break;
 
             case EtapaMision.TutorialCompletado:
-                textoMision.text =
-                    "Puedes ir a dormir o seguir recogiendo basura.";
+                textoMision.text = "Puedes ir a dormir o seguir recogiendo basura.";
                 break;
 
             case EtapaMision.EliminarOrcosNoche1:
                 textoMision.text =
                     "NOCHE 1: Derrota a los orcos: " +
-                    enemigosDerrotadosNoche +
-                    "/" + enemigosTotalesNoche;
+                    enemigosDerrotadosNoche + "/" + enemigosTotalesNoche;
                 break;
 
             case EtapaMision.PrimeraNocheCompletada:
-                textoMision.text =
-                    "¡Sobreviviste a la primera noche! Espera el amanecer.";
+                textoMision.text = "¡Sobreviviste a la primera noche! Espera el amanecer.";
                 break;
 
             case EtapaMision.ComprarPalaDia2:
-                textoMision.text =
-                    "DÍA 2: Reúne dinero y compra la pala al comerciante.";
+                textoMision.text = "DÍA 2: Reúne dinero y compra la pala al comerciante.";
                 break;
+
             case EtapaMision.PalaCompradaDia2:
-                textoMision.text =
-                    "DIA 2: Pala comprada. Preparate para la segunda noche.";
-                break;
             case EtapaMision.RepararBachesDia2:
                 textoMision.text =
-                    "DIA 2: Repara los baches: " +
+                    "DÍA 2: Repara los baches: " +
                     bachesReparados + "/" + bachesNecesarios;
                 break;
 
             case EtapaMision.BachesDia2Completados:
+                textoMision.text = "¡Reparaciones completas! Ve a dormir para la segunda noche.";
+                break;
+
+            case EtapaMision.EliminarOrcosNoche2:
                 textoMision.text =
-                    "¡Reparaciones completas! Preparate para la segunda noche.";
+                    "NOCHE 2 (Oleada " + oleadaActualNoche + "/" + totalOleadasNoche +
+                    "): Orcos: " + enemigosDerrotadosNoche + "/" + enemigosTotalesNoche;
+                break;
+
+            case EtapaMision.SegundaNocheCompletada:
+                textoMision.text = "¡Sobreviviste a la segunda noche! Espera el amanecer.";
+                break;
+
+            case EtapaMision.Dia3Iniciado:
+                textoMision.text = "DÍA 3: Prepárate para enfrentar el origen de la plaga.";
                 break;
         }
     }
-
-    public void RegistrarCompraPala()
-    {
-        if (EtapaActual != EtapaMision.ComprarPalaDia2)
-            return;
-
-        // Al comprar la pala, comienza la mision de reparacion.
-        bachesReparados = 0;
-        EtapaActual = EtapaMision.RepararBachesDia2;
-
-        ActualizarHUD();
-
-        Debug.Log(
-            "Nueva mision: reparar " +
-            bachesNecesarios + " baches."
-        );
-    }
-
-    public void RegistrarBacheReparado()
-    {
-        if (EtapaActual != EtapaMision.RepararBachesDia2)
-            return;
-
-        bachesReparados = Mathf.Min(
-            bachesReparados + 1,
-            bachesNecesarios
-        );
-
-        if (bachesReparados >= bachesNecesarios)
-        {
-            EtapaActual = EtapaMision.BachesDia2Completados;
-        }
-
-        ActualizarHUD();
-    }
-
-
 }

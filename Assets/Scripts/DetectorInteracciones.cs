@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -38,39 +37,31 @@ public class DetectorInteracciones : MonoBehaviour
             SistemaDialogos.DialogoActivo ||
             !jugadorFPS.enabled;
 
-        
-            if (interfazAbierta)
-            {
-                // Evitar que la misma pulsación de E
-                // cierre un diálogo y vuelva a interactuar.
-                esperarLiberacionE = true;
+        if (interfazAbierta)
+        {
+            esperarLiberacionE = true;
 
-                textoPuntero.enabled = false;
-                textoInteraccion.enabled = false;
+            textoPuntero.enabled = false;
+            textoInteraccion.enabled = false;
+            return;
+        }
+
+        if (esperarLiberacionE)
+        {
+            if (Keyboard.current != null &&
+                Keyboard.current.eKey.isPressed)
+            {
                 return;
             }
 
-            // Si acabamos de cerrar una interfaz,
-            // esperamos a que el jugador suelte E.
-            if (esperarLiberacionE)
+            esperarLiberacionE = false;
+
+            if (Keyboard.current != null &&
+                Keyboard.current.eKey.wasReleasedThisFrame)
             {
-                if (Keyboard.current != null &&
-                    Keyboard.current.eKey.isPressed)
-                {
-                    return;
-                }
-
-                esperarLiberacionE = false;
-
-                // Consumimos la liberación de la tecla
-                // sin ejecutar otra interacción.
-                if (Keyboard.current != null &&
-                    Keyboard.current.eKey.wasReleasedThisFrame)
-                {
-                    return;
-                }
+                return;
             }
-
+        }
 
         textoPuntero.enabled = true;
         textoPuntero.color = colorNormal;
@@ -87,37 +78,34 @@ public class DetectorInteracciones : MonoBehaviour
             distanciaInteraccion))
             return;
 
-        
-            // Detectar botellas y latas recolectables.
-            BasuraRecolectable basura =
-                impacto.collider.GetComponentInParent<BasuraRecolectable>();
+        // Detectar botellas y latas recolectables.
+        BasuraRecolectable basura =
+            impacto.collider.GetComponentInParent<BasuraRecolectable>();
 
-            if (basura != null)
+        if (basura != null)
+        {
+            MostrarInteraccion("[E] Recoger");
+
+            if (Keyboard.current != null &&
+                Keyboard.current.eKey.wasReleasedThisFrame)
             {
-                MostrarInteraccion("[E] Recoger");
+                InventarioJugador inventario =
+                    jugadorFPS.GetComponent<InventarioJugador>();
 
-                if (Keyboard.current != null &&
-                    Keyboard.current.eKey.wasReleasedThisFrame)
+                if (inventario != null)
                 {
-                    InventarioJugador inventario =
-                        jugadorFPS.GetComponent<InventarioJugador>();
-
-                    if (inventario != null)
-                    {
-                        basura.Recolectar(inventario);
-                    }
-                    else
-                    {
-                        Debug.LogWarning(
-                            "No se encontro InventarioJugador."
-                        );
-                    }
+                    basura.Recolectar(inventario);
                 }
-
-                return;
+                else
+                {
+                    Debug.LogWarning(
+                        "No se encontro InventarioJugador."
+                    );
+                }
             }
 
-
+            return;
+        }
 
         // Detectar baches reparables.
         BacheReparable bache =
@@ -138,37 +126,33 @@ public class DetectorInteracciones : MonoBehaviour
             return;
         }
 
-
         // Detectar el punto de descanso.
         PuntoDescansoInteractivo descanso =
             impacto.collider.GetComponentInParent<PuntoDescansoInteractivo>();
 
         if (descanso != null)
         {
-            if (descanso.PuedeDormir())
-            {
-                MostrarInteraccion("[E] Ir a dormir");
+            string mensajeDescanso = descanso.ObtenerTextoInteraccion();
 
-                if (Keyboard.current != null &&
-                    Keyboard.current.eKey.wasReleasedThisFrame)
-                {
-                    descanso.IntentarDormir();
-                }
-            }
-            else
+            if (!string.IsNullOrEmpty(mensajeDescanso))
             {
-                MostrarInteraccion(
-                    "Necesitas una escoba"
-                );
+                MostrarInteraccion(mensajeDescanso);
+            }
+
+            if (descanso.PuedeDormir() &&
+                Keyboard.current != null &&
+                Keyboard.current.eKey.wasReleasedThisFrame)
+            {
+                descanso.IntentarDormir();
             }
 
             return;
         }
 
-
         // Detectar al comerciante.
         ComercianteReciclaje comerciante =
             impacto.collider.GetComponentInParent<ComercianteReciclaje>();
+
         if (comerciante != null)
         {
             MostrarInteraccion("[E] Hablar");
@@ -178,38 +162,25 @@ public class DetectorInteracciones : MonoBehaviour
                 Keyboard.current != null &&
                 Keyboard.current.eKey.wasReleasedThisFrame)
             {
-                
-                
-            
                 switch (sistemaMisiones.EtapaActual)
                 {
-                    // Primera conversacion del tutorial.
                     case EtapaMision.HablarComerciante:
                         sistemaDialogos.IniciarDialogoInicial();
                         break;
 
-                    // Segunda conversacion del tutorial.
                     case EtapaMision.VolverComerciante:
                         sistemaDialogos.IniciarDialogoRegreso();
                         break;
 
-                    // Durante la recoleccion inicial,
-                    // todavia no se abre la tienda.
                     case EtapaMision.RecolectarResiduos:
                         break;
 
-                    // Despues del tutorial, la tienda
-                    // permanece disponible en cualquier mision.
                     default:
                         sistemaDialogos.AbrirTiendaHabitual();
                         break;
                 }
-
-
-
             }
         }
-
     }
 
     private void MostrarInteraccion(string mensaje)
