@@ -1,4 +1,4 @@
-
+using System.Collections;
 using UnityEngine;
 
 public class AtaqueEnemigo : MonoBehaviour
@@ -13,12 +13,17 @@ public class AtaqueEnemigo : MonoBehaviour
     [SerializeField] private float tiempoEntreAtaques = 3f;
     [SerializeField] private float duracionCombo = 2.7f;
 
+    [Header("Impacto sin Animation Events (Jefe Final)")]
+    [SerializeField] private bool usarImpactoPorTiempo = false;
+    [SerializeField] private float retrasoImpacto = 0.7f;
+
     private float siguienteAtaque;
     private float finCombo;
 
     private bool comboActivo;
     private int impactosRegistrados;
     private int danioAcumulado;
+    private Coroutine rutinaImpacto;
 
     private void Update()
     {
@@ -64,11 +69,31 @@ public class AtaqueEnemigo : MonoBehaviour
             duracionCombo + 0.1f
         );
 
-        // Iniciar la animacion, sin aplicar daño inmediato.
+        // Iniciar la animacion.
         animadorEnemigo.SetTrigger("Atacar");
+
+        if (usarImpactoPorTiempo)
+        {
+            if (rutinaImpacto != null)
+                StopCoroutine(rutinaImpacto);
+
+            rutinaImpacto = StartCoroutine(ImpactoTemporizado());
+        }
     }
 
-    // Este metodo sera llamado por los Animation Events.
+    private IEnumerator ImpactoTemporizado()
+    {
+        yield return new WaitForSeconds(retrasoImpacto);
+
+        if (comboActivo)
+        {
+            AplicarImpacto(danioAtaque);
+        }
+
+        rutinaImpacto = null;
+    }
+
+    // Este metodo sera llamado por los Animation Events o por el temporizador.
     public void AplicarImpacto(int danio)
     {
         if (!comboActivo || jugador == null)
@@ -93,12 +118,12 @@ public class AtaqueEnemigo : MonoBehaviour
         if (distancia > distanciaAtaque)
         {
             Debug.Log(
-                gameObject.name + " fallo un espadazo."
+                gameObject.name + " fallo el ataque."
             );
             return;
         }
 
-        // Evitar superar los 15 HP por combo.
+        // Evitar superar el danioAtaque por combo.
         int danioRestante = danioAtaque - danioAcumulado;
 
         int danioFinal = Mathf.Clamp(
@@ -128,6 +153,12 @@ public class AtaqueEnemigo : MonoBehaviour
         impactosRegistrados = 0;
         danioAcumulado = 0;
 
+        if (rutinaImpacto != null)
+        {
+            StopCoroutine(rutinaImpacto);
+            rutinaImpacto = null;
+        }
+
         if (animadorEnemigo != null)
         {
             animadorEnemigo.ResetTrigger("Atacar");
@@ -139,6 +170,7 @@ public class AtaqueEnemigo : MonoBehaviour
             Time.time + tiempoEntreAtaques
         );
     }
+
     public void AsignarJugador(VidaJugador nuevoJugador)
     {
         jugador = nuevoJugador;

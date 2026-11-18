@@ -1,4 +1,3 @@
-
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -14,6 +13,7 @@ public class VidaEnemigo : MonoBehaviour
     [SerializeField] private float tiempoDesaparicion = 3f;
 
     public int VidaActual { get; private set; }
+    public int VidaMaxima => vidaMaxima;
     public bool EstaDerrotado => derrotado;
 
     private bool derrotado = false;
@@ -50,20 +50,17 @@ public class VidaEnemigo : MonoBehaviour
             " de daño. Vida restante: " + VidaActual
         );
 
-        // Si perdio toda su vida, reproducir la muerte.
         if (VidaActual <= 0)
         {
             Morir();
             return;
         }
 
-        // Interrumpir el combo de espada.
         if (ataqueEnemigo != null)
         {
             ataqueEnemigo.CancelarCombo();
         }
 
-        // Reiniciar el tiempo de reaccion si recibe otro golpe.
         if (rutinaReaccion != null)
         {
             StopCoroutine(rutinaReaccion);
@@ -74,7 +71,6 @@ public class VidaEnemigo : MonoBehaviour
 
     private IEnumerator ReaccionarAlGolpe()
     {
-        // Detener momentaneamente la persecucion y el ataque.
         if (iaEnemigo != null)
             iaEnemigo.enabled = false;
 
@@ -99,7 +95,6 @@ public class VidaEnemigo : MonoBehaviour
         if (derrotado)
             yield break;
 
-        // Recuperar el movimiento y el combate.
         if (agente != null && agente.isOnNavMesh)
         {
             agente.isStopped = false;
@@ -127,27 +122,23 @@ public class VidaEnemigo : MonoBehaviour
             rutinaReaccion = null;
         }
 
-        // Cancelar cualquier ataque pendiente.
         if (ataqueEnemigo != null)
         {
             ataqueEnemigo.CancelarCombo();
             ataqueEnemigo.enabled = false;
         }
 
-        // Detener la inteligencia artificial.
         if (iaEnemigo != null)
         {
             iaEnemigo.enabled = false;
         }
 
-        // Detener la navegacion.
         if (agente != null && agente.isOnNavMesh)
         {
             agente.isStopped = true;
             agente.ResetPath();
         }
 
-        // Reproducir la animacion de muerte.
         if (animadorEnemigo != null)
         {
             animadorEnemigo.SetBool("Caminando", false);
@@ -156,7 +147,6 @@ public class VidaEnemigo : MonoBehaviour
             animadorEnemigo.SetTrigger("Morir");
         }
 
-        // Evitar seguir golpeando al enemigo derrotado.
         Collider colision = GetComponent<Collider>();
 
         if (colision != null)
@@ -166,7 +156,6 @@ public class VidaEnemigo : MonoBehaviour
 
         Debug.Log(gameObject.name + " ha sido derrotado.");
 
-        // Desaparecer despues de la animacion.
         Destroy(gameObject, tiempoDesaparicion);
     }
 

@@ -59,20 +59,15 @@ public class SistemaDiaNoche : MonoBehaviour
         if (EsDeNoche || transicionEnCurso)
             return;
 
-        if (DiaActual != 1 && DiaActual != 2)
+        if (DiaActual < 1 || DiaActual > 3)
         {
-            Debug.Log(
-                "La siguiente noche aun no esta desbloqueada."
-            );
+            Debug.Log("La siguiente noche aun no esta desbloqueada.");
             return;
         }
 
-        if (luzSol == null || camaraJugador == null ||
-            generadorEnemigos == null)
+        if (luzSol == null || camaraJugador == null || generadorEnemigos == null)
         {
-            Debug.LogWarning(
-                "Faltan referencias en SistemaDiaNoche."
-            );
+            Debug.LogWarning("Faltan referencias en SistemaDiaNoche.");
             return;
         }
 
@@ -228,5 +223,46 @@ public class SistemaDiaNoche : MonoBehaviour
         }
 
         Debug.Log("¡Ha amanecido! Comienza el Dia " + DiaActual);
+    }
+
+    [ContextMenu("Prueba - Saltar al Dia 3 (Dormir directo para Jefe)")]
+    private void PruebaSaltarDia3DormirDirecto()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("Ejecuta esta prueba en Play Mode.");
+            return;
+        }
+
+        EsDeNoche = false;
+        transicionEnCurso = false;
+        DiaActual = 3;
+
+        if (sistemaMisiones != null)
+            sistemaMisiones.ForzarPruebaDia3(true);
+
+        Debug.Log("PRUEBA: Saltado al Dia 3. Ve a la tienda de campaña y presiona [E] para dormir.");
+    }
+
+    [ContextMenu("Prueba - Saltar al Dia 3 (Probar Portal desde cero)")]
+    private void PruebaSaltarDia3ConPortal()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("Ejecuta esta prueba en Play Mode.");
+            return;
+        }
+
+        EsDeNoche = false;
+        transicionEnCurso = false;
+        DiaActual = 3;
+
+        if (regeneradorBasura != null)
+            regeneradorBasura.RegenerarBasura();
+
+        if (sistemaMisiones != null)
+            sistemaMisiones.ForzarPruebaDia3(false);
+
+        Debug.Log("PRUEBA: Saltado al Dia 3. Recoge 6 residuos y activa el Portal de Basura.");
     }
 }

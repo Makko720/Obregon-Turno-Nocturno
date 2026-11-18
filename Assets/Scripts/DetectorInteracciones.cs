@@ -96,12 +96,6 @@ public class DetectorInteracciones : MonoBehaviour
                 {
                     basura.Recolectar(inventario);
                 }
-                else
-                {
-                    Debug.LogWarning(
-                        "No se encontro InventarioJugador."
-                    );
-                }
             }
 
             return;
@@ -113,14 +107,34 @@ public class DetectorInteracciones : MonoBehaviour
 
         if (bache != null)
         {
-            MostrarInteraccion(
-                bache.ObtenerTextoInteraccion()
-            );
+            MostrarInteraccion(bache.ObtenerTextoInteraccion());
 
             if (Keyboard.current != null &&
                 Keyboard.current.eKey.wasReleasedThisFrame)
             {
                 bache.IntentarReparar();
+            }
+
+            return;
+        }
+
+        // Detectar el Portal de Basura (Dia 3).
+        PortalBasura portal =
+            impacto.collider.GetComponentInParent<PortalBasura>();
+
+        if (portal != null)
+        {
+            string mensajePortal = portal.ObtenerTextoInteraccion();
+            if (!string.IsNullOrEmpty(mensajePortal))
+            {
+                MostrarInteraccion(mensajePortal);
+            }
+
+            if (portal.PuedeActivarse() &&
+                Keyboard.current != null &&
+                Keyboard.current.eKey.wasReleasedThisFrame)
+            {
+                portal.IntentarActivar();
             }
 
             return;

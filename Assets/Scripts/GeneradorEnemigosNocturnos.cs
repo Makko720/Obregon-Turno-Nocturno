@@ -7,8 +7,15 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
 {
     [Header("Referencias")]
     [SerializeField] private SistemaDiaNoche sistemaDiaNoche;
+    [SerializeField] private SistemaMisiones sistemaMisiones;
+    [SerializeField] private ControladorVictoria controladorVictoria;
     [SerializeField] private VidaJugador jugador;
     [SerializeField] private VidaEnemigo prefabEnemigo;
+
+    [Header("Jefe Final (Noche 3)")]
+    [SerializeField] private VidaEnemigo prefabJefeFinal;
+    [SerializeField] private Transform puntoAparicionJefe;
+    [SerializeField] private int escoltasJefe = 2;
 
     [Header("Puntos de aparicion")]
     [SerializeField] private Transform[] puntosAparicion = new Transform[5];
@@ -22,9 +29,12 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
     [SerializeField] private float radioBusquedaNavMesh = 3f;
 
     private readonly List<VidaEnemigo> enemigos = new List<VidaEnemigo>();
+    private VidaEnemigo jefeInstanciado;
+    private int ultimaVidaJefe = -1;
 
     private bool combateNocturnoActivo;
     private bool transicionandoOleada;
+    private bool esNocheDeJefe;
     private int ultimoConteo = -1;
 
     private int[] configuracionOleadasActual;
@@ -83,6 +93,16 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
         if (combateNocturnoActivo || !ConfiguracionValida())
             return;
 
+        esNocheDeJefe = (diaNoche == 3);
+        jefeInstanciado = null;
+        ultimaVidaJefe = -1;
+
+        if (esNocheDeJefe)
+        {
+            GenerarCombateJefeFinal();
+            return;
+        }
+
         if (diaNoche == 2 && oleadasNoche2 != null && oleadasNoche2.Length > 0)
         {
             configuracionOleadasActual = oleadasNoche2;
@@ -97,6 +117,73 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
         transicionandoOleada = false;
 
         InstanciarOleadaActual();
+    }
+
+    private void GenerarCombateJefeFinal()
+    {
+        enemigos.Clear();
+        configuracionOleadasActual = new int[] { 1 };
+        indiceOleadaActual = 0;
+
+        List<Transform> puntosSeguros = ObtenerPuntosSeguros();
+        Transform puntoJefe = puntoAparicionJefe != null
+            ? puntoAparicionJefe
+            : (puntosSeguros.Count > 0 ? puntosSeguros[0] : puntosAparicion[0]);
+
+        NavMesh.SamplePosition(
+            puntoJefe.position,
+            out NavMeshHit lugarJefe,
+            radioBusquedaNavMesh * 2f,
+            NavMesh.AllAreas
+        );
+
+        Vector3 posJefe = lugarJefe.hit ? lugarJefe.position : puntoJefe.position;
+        VidaEnemigo prefabAUsar = prefabJefeFinal != null ? prefabJefeFinal : prefabEnemigo;
+
+        jefeInstanciado = Instantiate(prefabAUsar, posJefe, puntoJefe.rotation);
+        ConfigurarEnemigo(jefeInstanciado);
+        enemigos.Add(jefeInstanciado);
+
+        // Escoltas opcionales
+        for (int i = 0; i < escoltasJefe && puntosSeguros.Count > 0; i++)
+        {
+            Transform puntoEscolta = puntosSeguros[i % puntosSeguros.Count];
+            if (NavMesh.SamplePosition(puntoEscolta.position, out NavMeshHit lugarEscolta, radioBusquedaNavMesh, NavMesh.AllAreas))
+            {
+                VidaEnemigo escolta = Instantiate(prefabEnemigo, lugarEscolta.position, puntoEscolta.rotation);
+                ConfigurarEnemigo(escolta);
+                enemigos.Add(escolta);
+            }
+        }
+
+        combateNocturnoActivo = true;
+        transicionandoOleada = false;
+        ultimoConteo = enemigos.Count;
+
+        sistemaDiaNoche.ActualizarProgresoOleada(ultimoConteo, enemigos.Count, 1, 1);
+
+        if (sistemaMisiones != null && jefeInstanciado != null)
+        {
+            ultimaVidaJefe = jefeInstanciado.VidaActual;
+            sistemaMisiones.ActualizarVidaJefe(jefeInstanciado.VidaActual, jefeInstanciado.VidaMaxima);
+        }
+
+        Debug.Log("¡Noche Final iniciada! Ha aparecido el Jefe de la Basura.");
+    }
+
+    private void ConfigurarEnemigo(VidaEnemigo enemigo)
+    {
+        if (enemigo == null)
+            return;
+
+        IAEnemigo ia = enemigo.GetComponent<IAEnemigo>();
+        AtaqueEnemigo ataque = enemigo.GetComponent<AtaqueEnemigo>();
+
+        if (ia != null)
+            ia.AsignarJugador(jugador.transform);
+
+        if (ataque != null)
+            ataque.AsignarJugador(jugador);
     }
 
     private void InstanciarOleadaActual()
@@ -139,15 +226,7 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
                 puntoElegido.rotation
             );
 
-            IAEnemigo ia = enemigo.GetComponent<IAEnemigo>();
-            AtaqueEnemigo ataque = enemigo.GetComponent<AtaqueEnemigo>();
-
-            if (ia != null)
-                ia.AsignarJugador(jugador.transform);
-
-            if (ataque != null)
-                ataque.AsignarJugador(jugador);
-
+            ConfigurarEnemigo(enemigo);
             enemigos.Add(enemigo);
         }
 
@@ -160,11 +239,6 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
             enemigos.Count,
             numeroOleada,
             totalOleadas
-        );
-
-        Debug.Log(
-            "Oleada " + numeroOleada + "/" + totalOleadas +
-            " iniciada. Enemigos: " + ultimoConteo
         );
     }
 
@@ -210,6 +284,16 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
         if (!combateNocturnoActivo || transicionandoOleada)
             return;
 
+        if (esNocheDeJefe && jefeInstanciado != null && sistemaMisiones != null)
+        {
+            int vidaActual = jefeInstanciado.EstaDerrotado ? 0 : jefeInstanciado.VidaActual;
+            if (vidaActual != ultimaVidaJefe)
+            {
+                ultimaVidaJefe = vidaActual;
+                sistemaMisiones.ActualizarVidaJefe(vidaActual, jefeInstanciado.VidaMaxima);
+            }
+        }
+
         int enemigosVivos = 0;
 
         foreach (VidaEnemigo enemigo in enemigos)
@@ -237,7 +321,7 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
         {
             transicionandoOleada = true;
 
-            if (indiceOleadaActual + 1 < configuracionOleadasActual.Length)
+            if (!esNocheDeJefe && indiceOleadaActual + 1 < configuracionOleadasActual.Length)
             {
                 StartCoroutine(IniciarSiguienteOleada());
             }
@@ -281,7 +365,18 @@ public class GeneradorEnemigosNocturnos : MonoBehaviour
         enemigos.Clear();
         combateNocturnoActivo = false;
 
-        Debug.Log("¡Todas las oleadas de la noche fueron derrotadas!");
-        sistemaDiaNoche.IniciarAmanecer();
+        if (esNocheDeJefe)
+        {
+            Debug.Log("¡Jefe Final derrotado! Mostrando pantalla de victoria.");
+            if (controladorVictoria != null)
+            {
+                controladorVictoria.MostrarVictoria();
+            }
+        }
+        else
+        {
+            Debug.Log("¡Todas las oleadas de la noche fueron derrotadas!");
+            sistemaDiaNoche.IniciarAmanecer();
+        }
     }
 }

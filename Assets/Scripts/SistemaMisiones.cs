@@ -16,7 +16,11 @@ public enum EtapaMision
     BachesDia2Completados,
     EliminarOrcosNoche2,
     SegundaNocheCompletada,
-    Dia3Iniciado
+    RecolectarRecursosDia3,
+    ActivarPortalDia3,
+    PortalActivadoDia3,
+    EnfrentarJefeNoche3,
+    VictoriaFinal
 }
 
 public class SistemaMisiones : MonoBehaviour
@@ -27,6 +31,7 @@ public class SistemaMisiones : MonoBehaviour
 
     [Header("Configuracion")]
     [SerializeField] private int residuosNecesarios = 5;
+    [SerializeField] private int recursosDia3Necesarios = 6;
 
     [Header("Reparaciones del Dia 2")]
     [SerializeField] private int bachesNecesarios = 3;
@@ -39,6 +44,9 @@ public class SistemaMisiones : MonoBehaviour
     private int enemigosDerrotadosNoche;
     private int oleadaActualNoche = 1;
     private int totalOleadasNoche = 1;
+
+    private int vidaJefeActual = 0;
+    private int vidaJefeMaxima = 0;
 
     private void OnEnable()
     {
@@ -54,13 +62,24 @@ public class SistemaMisiones : MonoBehaviour
             inventario.InventarioActualizado -= RevisarRecoleccion;
     }
 
-    private int ObtenerResiduos()
+    private int ObtenerResiduosBasicos()
     {
         if (inventario == null)
             return 0;
 
         return inventario.ObtenerCantidad(TipoObjetoInventario.Botella) +
                inventario.ObtenerCantidad(TipoObjetoInventario.Lata);
+    }
+
+    private int ObtenerRecursosTotalesDia3()
+    {
+        if (inventario == null)
+            return 0;
+
+        return inventario.ObtenerCantidad(TipoObjetoInventario.Botella) +
+               inventario.ObtenerCantidad(TipoObjetoInventario.Lata) +
+               inventario.ObtenerCantidad(TipoObjetoInventario.ResiduosBarrido) +
+               inventario.ObtenerCantidad(TipoObjetoInventario.Escombros);
     }
 
     public void FinalizarPrimerDialogo()
@@ -75,9 +94,19 @@ public class SistemaMisiones : MonoBehaviour
     private void RevisarRecoleccion()
     {
         if (EtapaActual == EtapaMision.RecolectarResiduos &&
-            ObtenerResiduos() >= residuosNecesarios)
+            ObtenerResiduosBasicos() >= residuosNecesarios)
         {
             EtapaActual = EtapaMision.VolverComerciante;
+        }
+        else if (EtapaActual == EtapaMision.RecolectarRecursosDia3 &&
+                 ObtenerRecursosTotalesDia3() >= recursosDia3Necesarios)
+        {
+            EtapaActual = EtapaMision.ActivarPortalDia3;
+        }
+        else if (EtapaActual == EtapaMision.ActivarPortalDia3 &&
+                 ObtenerRecursosTotalesDia3() < recursosDia3Necesarios)
+        {
+            EtapaActual = EtapaMision.RecolectarRecursosDia3;
         }
 
         ActualizarHUD();
@@ -143,8 +172,30 @@ public class SistemaMisiones : MonoBehaviour
                 ? EtapaMision.SegundaNocheCompletada
                 : EtapaMision.EliminarOrcosNoche2;
         }
+        else if (diaNoche == 3)
+        {
+            if (EtapaActual != EtapaMision.PortalActivadoDia3 &&
+                EtapaActual != EtapaMision.EnfrentarJefeNoche3 &&
+                EtapaActual != EtapaMision.VictoriaFinal)
+                return;
+
+            EtapaActual = todasOleadasLimpias
+                ? EtapaMision.VictoriaFinal
+                : EtapaMision.EnfrentarJefeNoche3;
+        }
 
         ActualizarHUD();
+    }
+
+    public void ActualizarVidaJefe(int actual, int maxima)
+    {
+        vidaJefeActual = Mathf.Max(0, actual);
+        vidaJefeMaxima = Mathf.Max(1, maxima);
+
+        if (EtapaActual == EtapaMision.EnfrentarJefeNoche3)
+        {
+            ActualizarHUD();
+        }
     }
 
     public void RegistrarAmanecer(int nuevoDia)
@@ -156,9 +207,19 @@ public class SistemaMisiones : MonoBehaviour
         }
         else if (nuevoDia == 3 && EtapaActual == EtapaMision.SegundaNocheCompletada)
         {
-            EtapaActual = EtapaMision.Dia3Iniciado;
-            ActualizarHUD();
+            EtapaActual = EtapaMision.RecolectarRecursosDia3;
+            RevisarRecoleccion();
         }
+    }
+
+    public void RegistrarPortalActivado()
+    {
+        if (EtapaActual != EtapaMision.RecolectarRecursosDia3 &&
+            EtapaActual != EtapaMision.ActivarPortalDia3)
+            return;
+
+        EtapaActual = EtapaMision.PortalActivadoDia3;
+        ActualizarHUD();
     }
 
     public void RegistrarCompraPala()
@@ -186,6 +247,20 @@ public class SistemaMisiones : MonoBehaviour
         ActualizarHUD();
     }
 
+    public void ForzarPruebaDia3(bool portalYaActivado)
+    {
+        if (portalYaActivado)
+        {
+            EtapaActual = EtapaMision.PortalActivadoDia3;
+            ActualizarHUD();
+        }
+        else
+        {
+            EtapaActual = EtapaMision.RecolectarRecursosDia3;
+            RevisarRecoleccion();
+        }
+    }
+
     private void ActualizarHUD()
     {
         if (textoMision == null)
@@ -200,7 +275,7 @@ public class SistemaMisiones : MonoBehaviour
             case EtapaMision.RecolectarResiduos:
                 textoMision.text =
                     "Recoge basura de las calles: " +
-                    Mathf.Min(ObtenerResiduos(), residuosNecesarios) +
+                    Mathf.Min(ObtenerResiduosBasicos(), residuosNecesarios) +
                     "/" + residuosNecesarios;
                 break;
 
@@ -251,8 +326,29 @@ public class SistemaMisiones : MonoBehaviour
                 textoMision.text = "¡Sobreviviste a la segunda noche! Espera el amanecer.";
                 break;
 
-            case EtapaMision.Dia3Iniciado:
-                textoMision.text = "DÍA 3: Prepárate para enfrentar el origen de la plaga.";
+            case EtapaMision.RecolectarRecursosDia3:
+                textoMision.text =
+                    "DÍA 3: Reúne residuos para el portal: " +
+                    Mathf.Min(ObtenerRecursosTotalesDia3(), recursosDia3Necesarios) +
+                    "/" + recursosDia3Necesarios;
+                break;
+
+            case EtapaMision.ActivarPortalDia3:
+                textoMision.text = "DÍA 3: Ve al Portal de Basura y actívalo con [E].";
+                break;
+
+            case EtapaMision.PortalActivadoDia3:
+                textoMision.text = "¡Portal activado! Ve a dormir para enfrentar al Jefe Final.";
+                break;
+
+            case EtapaMision.EnfrentarJefeNoche3:
+                textoMision.text =
+                    "NOCHE FINAL: Derrota al Rey de la Basura (HP: " +
+                    vidaJefeActual + "/" + vidaJefeMaxima + ")";
+                break;
+
+            case EtapaMision.VictoriaFinal:
+                textoMision.text = "¡VICTORIA! Ciudad Obregón está a salvo.";
                 break;
         }
     }
